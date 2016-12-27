@@ -1,20 +1,22 @@
 HEADERS	= ./headers
 KERNELS = ./kernels
-NVCC ?= nvcc
-CXX = clang++
+NVCC = nvcc
+MPICXX = mpicxx
 
 CUDA_PATH ?= "/usr/local/cuda-8.0"
+
 NVCCFLAGS = -ccbin=$(CXX) -Xcompiler
 CXXFLAGS = -O3 -I. -I$(HEADERS) -D_FORCE_INLINES
+LIBS = -lcudart -L/opt/apps/cuda/6.5/lib64/lcudart -L/usr/local/cuda-8.0/lib64/
 
-EXEC = nbody3-cuda
+EXEC = nbody-cuda
 
 all: $(EXEC)
 
 
 
 # Load common make options
-LDFLAGS	=  -L/opt/apps/cuda/6.5/lib64/lcudart -L$(CUDA_HOME)/lib64
+LDFLAGS	= -lcudart -L/opt/apps/cuda/6.5/lib64/lcudart -L/usr/local/cuda-8.0/lib64/
 
 update.o: $(KERNELS)/update.cu
 	$(NVCC) $(CXXFLAGS) $(NVFLAGS) -c $<
@@ -23,11 +25,13 @@ calc_acc.o: $(KERNELS)/calc_acc.cu
 wrapper.o: wrapper.cu
 		$(NVCC) $(CXXFLAGS) $(NVFLAGS) -c $<
 
-nbody3-cuda.o :nbody3-cuda.cu
-	$(NVCC) $(CXXFLAGS) $(NVFLAGS) -c $<
+nbody-cuda.o :nbody-cuda.cpp
+	$(MPICXX) $(CXXFLAGS) $(NVFLAGS) -c $<
 
-nbody3-cuda: update.o calc_acc.o  wrapper.o nbody3-cuda.o
-	$(NVCC) $(CXXFLAGS) $(NVFLAGS)  $^ -o nbody3-cuda
+nbody-cuda: nbody3-cuda.o wrapper.o update.o calc_acc.o
+	$(MPICXX) $(CXXFLAGS)  $^  -o nbody3-cuda $(LDFLAGS)
+
+
 
 clean:
 	/bin/rm -fv $(EXEC) *.d *.o *.optrpt
