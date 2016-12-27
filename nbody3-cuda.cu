@@ -4,10 +4,7 @@
 #include <math.h>
 #include <ctype.h>
 
-#include <cuda.h>
 #include <aligned_allocator.h>
-#include <cuda_error_check.h>
-#include <kernels.cuh>
 #include <wrapper.h>
 
 #define NDIM (3)
@@ -103,7 +100,10 @@ int main (int argc, char* argv[]) {
   double * d_acc = NULL;
   double * d_mass = NULL;
   // allocate memory on device
-  allocate_device_memory(&d_pos, &d_vel, &d_acc , &d_mass, n);
+  allocate_device_memory(d_pos, NDIM*n);
+  allocate_device_memory(d_vel, NDIM*n);
+  allocate_device_memory(d_acc, NDIM*n);
+  allocate_device_memory(d_mass, n);
   // Initialize the positions with random numbers (0,1].
   // Particles are given randomized starting positions and slightly
   // varying masses.
@@ -118,58 +118,29 @@ int main (int argc, char* argv[]) {
     mass[i] = frand() + DBL_MIN;
   }
 
-
   transfer_to_device(d_pos, pos, NDIM*n);
   transfer_to_device(d_vel, vel, NDIM*n);
   transfer_to_device(d_acc, acc, NDIM*n);
   transfer_to_device(d_mass, mass, n);
 
-
-
   // Run the step several times.
-  double t_accel = 0, t_update = 0;
+  float t_accel = 0, t_update = 0;
   for (int step = 0; step < num_steps; ++step) {
     //cuda events for recording kernel execution time
-    cudaEvent_t t1, t2, t3;
-    cudaEventCreate(&t1);
-    cudaEventCreate(&t2);
-    cudaEventCreate(&t3);
-
-    cudaEventRecord(t1);
     // non load balancing partition
-    dim3 block_size = dim3(256, 1, 1);
-    dim3 grid_size = dim3( n/block_size.x + 1, 1, 1);
+
     // launch kernel on gpu to calculate acceleration
-    calc_acc<<<grid_size,block_size>>>(d_pos, d_acc, d_mass, n );
-    cudaEventRecord(t2);
-
-    cuda_error_check( cudaGetLastError() );
-
-    // halt cpu execution until the kernel is done
-    cudaEventSynchronize(t2);
+    t_accel += call_calc_acc(d_pos, d_acc, d_mass, n);
 
     // launch kernel to update pos and vel
-    update<<<grid_size,block_size>>>( d_pos, d_vel, d_acc, n, dt );
+    t_update += call_update(d_pos, d_vel, d_acc, n, dt);
 
-
-    cuda_error_check( cudaGetLastError() );
-
-    cuda_error_check( cudaMemcpy(vel, d_vel, NDIM*n*sizeof(double), cudaMemcpyDeviceToHost) );
-
-    cudaEventRecord(t3);
-    cudaEventSynchronize(t3);
-
+    transfer_from_device(vel, d_vel, NDIM*n);
 
     // 3. Find the faster moving object.
     if (step % 10 == 0) {
        search(vel, n );
      }
-    float t_acc, t_up;
-
-    cudaEventElapsedTime(&t_acc, t1, t2);
-    cudaEventElapsedTime(&t_up, t2, t3);
-    t_accel +=  t_acc;
-    t_update += t_up;
   }
 
   float nkbytes = (float)((size_t)7 * sizeof(double) * (size_t)n) / 1024.0f;
@@ -181,6 +152,10 @@ int main (int argc, char* argv[]) {
   Deallocate(acc);
   Deallocate(mass);
 
-  free_device_memory(&d_pos, &d_acc, &d_vel, &d_mass);
+  free_device_memory(d_pos);
+  free_device_memory(d_vel);
+  free_device_memory(d_acc);
+  free_device_memory(d_mass);
+
   return 0;
 }
