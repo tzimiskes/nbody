@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <ctype.h>
-#include <string.h>
 #include <aligned_allocator.h>
 #include <wrapper.h>
 #include <mpi.h>

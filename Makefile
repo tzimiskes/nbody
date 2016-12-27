@@ -13,8 +13,6 @@ EXEC = nbody-cuda
 
 all: $(EXEC)
 
-
-
 # Load common make options
 LDFLAGS	= -lcudart -L/opt/apps/cuda/6.5/lib64/lcudart -L/usr/local/cuda-8.0/lib64/
 
@@ -28,10 +26,8 @@ wrapper.o: wrapper.cu
 nbody-cuda.o :nbody-cuda.cpp
 	$(MPICXX) $(CXXFLAGS) $(NVFLAGS) -c $<
 
-nbody-cuda: nbody-cuda.o wrapper.o update.o calc_acc.o
-	$(MPICXX) $(CXXFLAGS)  $^  -o nbody3-cuda $(LDFLAGS)
-
-
+$(EXEC): nbody-cuda.o wrapper.o update.o calc_acc.o
+	$(MPICXX) $(CXXFLAGS)  $^  -o $(EXEC) $(LDFLAGS)
 
 clean:
 	/bin/rm -fv $(EXEC) *.d *.o *.optrpt
