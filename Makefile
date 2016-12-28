@@ -23,11 +23,11 @@ calc_acc.o: $(KERNELS)/calc_acc.cu
 wrapper.o: wrapper.cu
 		$(NVCC) $(CXXFLAGS) $(NVFLAGS) -c $<
 
-nbody-cuda.o :nbody-cuda.cpp
+main.o :main.cpp
 	$(MPICXX) $(CXXFLAGS) $(NVFLAGS) -c $<
 
-$(EXEC): nbody-cuda.o wrapper.o update.o calc_acc.o
-	$(MPICXX) $(CXXFLAGS)  $^  -o $(EXEC) $(LDFLAGS)
+$(EXEC): main.o wrapper.o update.o calc_acc.o
+	$(MPICXX) $(CXXFLAGS)  $^  -o $@ $(LDFLAGS)
 
 clean:
 	/bin/rm -fv $(EXEC) *.d *.o *.optrpt
