@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <aligned_allocator.h>
 
-#include <wrapper.h>
+#include <cuda_wrapper.h>
 
 #include <mpi.h>
 
@@ -45,9 +45,9 @@ int main (int argc, char* argv[]) {
   int n = 100;
   MPI_Init(&argc,&argv);
 
-  int myRank, numProcs;
-  MPI_Comm_size(MPI_COMM_WORLD,&numProcs);
-  MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
+  int rank, n_procs;
+  MPI_Comm_size(MPI_COMM_WORLD,&n_procs);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   // Define the number of steps to run. The default is 100.
 
   int num_steps = 100;

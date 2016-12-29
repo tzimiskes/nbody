@@ -1,30 +1,33 @@
 HEADERS	= ./headers
 KERNELS = ./kernels
+VPATH = $(HEADERS):$(KERNELS)
+OBJS = main.o cuda_wrapper.o update.o calc_acc.o
 
 NVCC = nvcc
+CXX = g++
 MPICXX = mpicxx
 
-CUDA_PATH ?= "/usr/local/cuda-8.0"
-
+CUDA_PATH ?= "/usr/local/cuda-7.5/lib64"
 NVCCFLAGS = -ccbin=$(CXX) -Xcompiler
 CXXFLAGS = -O3 -I. -I$(HEADERS) -D_FORCE_INLINES
-LDFLAGS = -lcudart -L/opt/apps/cuda/6.5/lib64/lcudart -L/usr/local/cuda-8.0/lib64/
+LDFLAGS = -lcudart -L/opt/apps/cuda/6.5/lib64/lcudart -L$(CUDA_PATH)
 
 EXEC = nbody-cuda
 
 all: $(EXEC)
 
-update.o: $(KERNELS)/update.cu
+update.o: update.cu
 	$(NVCC) $(CXXFLAGS) $(NVFLAGS) -c $<
-calc_acc.o: $(KERNELS)/calc_acc.cu
-	$(NVCC) $(CXXFLAGS) $(NVFLAGS) -c $<
-wrapper.o: wrapper.cu
+calc_acc.o: calc_acc.cu
 		$(NVCC) $(CXXFLAGS) $(NVFLAGS) -c $<
 
-main.o :main.cpp
+cuda_wrapper.o: cuda_wrapper.cu kernels.cuh
+		$(NVCC) $(CXXFLAGS) $(NVFLAGS) -c $<
+
+main.o :main.cpp aligned_allocator.h cuda_wrapper.h
 	$(MPICXX) $(CXXFLAGS) $(NVFLAGS) -c $<
 
-$(EXEC): main.o wrapper.o update.o calc_acc.o
+$(EXEC): $(OBJS)
 	$(MPICXX) $(CXXFLAGS)  $^  -o $@ $(LDFLAGS)
 
 clean:
