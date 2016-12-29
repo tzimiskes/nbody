@@ -3,13 +3,13 @@
 #include <stdio.h>
 #include <math.h>
 #include <ctype.h>
-#include <aligned_allocator.h>
 
-#include <cuda_wrapper.h>
+
 
 #include <mpi.h>
 
-#include <cuda_runtime.h>
+#include <cuda_wrapper.h>
+
 
 #define NDIM (3)
 
@@ -18,6 +18,7 @@ double frand(void) {
   return ((double) rand()) / RAND_MAX;
 }
 
+/*
 void search (double vel[], const int n)
 {
   double minv = 1e10, maxv = 0, ave = 0;
@@ -34,7 +35,7 @@ void search (double vel[], const int n)
   }
   printf("min/max/ave velocity = %e, %e, %e\n", minv, maxv, ave / n);
 }
-
+*/
 void help() {
   fprintf(stderr,"nbody3 --help|-h --nparticles|-n --nsteps|-s --stepsize|-t\n");
 }
@@ -93,15 +94,10 @@ int main (int argc, char* argv[]) {
       return 1;
     }
   }
-  double *pos  = NULL;
-  double *vel  = NULL;
-  double *acc  = NULL;
-  double *mass = NULL;
-
-  Allocate(pos, n*NDIM);
-  Allocate(vel, n*NDIM);
-  Allocate(acc, n*NDIM);
-  Allocate(mass, n);
+  double* pos  = (double* )malloc(n*NDIM*sizeof(double));
+  double* vel  = (double* )malloc(n*NDIM*sizeof(double));
+  double* acc  = (double* )malloc(n*NDIM*sizeof(double));
+  double* mass = (double* )malloc(n*sizeof(double));
 
   // instantiate pointers
   double * d_pos = NULL;
@@ -109,10 +105,10 @@ int main (int argc, char* argv[]) {
   double * d_acc = NULL;
   double * d_mass = NULL;
   // allocate memory on device
-  allocate_device_memory(d_pos, NDIM*n);
-  allocate_device_memory(d_vel, NDIM*n);
-  allocate_device_memory(d_acc, NDIM*n);
-  allocate_device_memory(d_mass, n);
+  allocate_device_memory(&d_pos, NDIM*n);
+  allocate_device_memory(&d_vel, NDIM*n);
+  allocate_device_memory(&d_acc, NDIM*n);
+  allocate_device_memory(&d_mass, n);
   // Initialize the positions with random numbers (0,1].
   // Particles are given randomized starting positions and slightly
   // varying masses.
@@ -144,11 +140,10 @@ int main (int argc, char* argv[]) {
     // launch kernel to update pos and vel
     t_update += call_update(d_pos, d_vel, d_acc, n, dt);
 
-    transfer_from_device(vel, d_vel, NDIM*n);
-
-    // 3. Find the faster moving object.
+        // 3. Find the faster moving object.
     if (step % 10 == 0) {
-       search(vel, n );
+      transfer_from_device(vel, d_vel, NDIM*n);
+  //    search(vel, n );
      }
   }
 
@@ -156,15 +151,19 @@ int main (int argc, char* argv[]) {
   //printf("Average time = %f (ms) per step with %d elements %.2f KB over %d steps %.3f%%, %.3f%%, %.3f%%\n", t_calc*1000.0/num_steps, n, nkbytes, num_steps, 100*t_accel/t_calc, 100*t_update/t_calc, 100*t_search/t_calc);
   printf("Average time = %f (ms) per step with %d elements %.2f KB over %d steps %f %f \n", (t_accel+t_update)/num_steps, n, nkbytes, num_steps, t_accel/num_steps, t_update/num_steps);
 
-  Deallocate(pos);
-  Deallocate(vel);
-  Deallocate(acc);
-  Deallocate(mass);
+  free(pos);
+  pos = NULL;
+  free(vel);
+  vel = NULL;
+  free(acc);
+  acc = NULL;
+  free(mass);
+  mass = NULL;
 
-  free_device_memory(d_pos);
-  free_device_memory(d_vel);
-  free_device_memory(d_acc);
-  free_device_memory(d_mass);
+  free_device_memory(&d_pos);
+  free_device_memory(&d_vel);
+  free_device_memory(&d_acc);
+  free_device_memory(&d_mass);
 
   MPI_Finalize();
   return 0;

@@ -5,7 +5,7 @@ OBJS = main.o cuda_wrapper.o update.o calc_acc.o
 
 NVCC = nvcc
 CXX = g++
-MPICXX = mpicxx
+MPICXX = mpicc
 
 CUDA_PATH ?= "/usr/local/cuda-7.5/lib64"
 NVCCFLAGS = -ccbin=$(CXX) -Xcompiler
@@ -24,7 +24,7 @@ calc_acc.o: calc_acc.cu
 cuda_wrapper.o: cuda_wrapper.cu kernels.cuh
 		$(NVCC) $(CXXFLAGS) $(NVFLAGS) -c $<
 
-main.o :main.cpp aligned_allocator.h cuda_wrapper.h
+main.o :main.c
 	$(MPICXX) $(CXXFLAGS) $(NVFLAGS) -c $<
 
 $(EXEC): $(OBJS)
