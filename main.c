@@ -3,13 +3,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <ctype.h>
-
-
+#include <string.h>
 
 #include <mpi.h>
 
 #include <cuda_wrapper.h>
-
 
 #define NDIM (3)
 
@@ -17,12 +15,11 @@
 double frand(void) {
   return ((double) rand()) / RAND_MAX;
 }
-
-/*
-void search (double vel[], const int n)
+// for diagnostics
+void search (const double vel[], const int n)
 {
   double minv = 1e10, maxv = 0, ave = 0;
-  for (int i = 0; i < n; ++i) {
+  for (size_t i = 0; i < n; ++i) {
     double vmag = 0;
     for (int k = 0; k < NDIM; ++k) {
 
@@ -35,7 +32,7 @@ void search (double vel[], const int n)
   }
   printf("min/max/ave velocity = %e, %e, %e\n", minv, maxv, ave / n);
 }
-*/
+
 void help() {
   fprintf(stderr,"nbody3 --help|-h --nparticles|-n --nsteps|-s --stepsize|-t\n");
 }
@@ -143,13 +140,14 @@ int main (int argc, char* argv[]) {
         // 3. Find the faster moving object.
     if (step % 10 == 0) {
       transfer_from_device(vel, d_vel, NDIM*n);
-  //    search(vel, n );
+      search(vel, n );
      }
   }
 
   float nkbytes = (float)((size_t)7 * sizeof(double) * (size_t)n) / 1024.0f;
-  //printf("Average time = %f (ms) per step with %d elements %.2f KB over %d steps %.3f%%, %.3f%%, %.3f%%\n", t_calc*1000.0/num_steps, n, nkbytes, num_steps, 100*t_accel/t_calc, 100*t_update/t_calc, 100*t_search/t_calc);
-  printf("Average time = %f (ms) per step with %d elements %.2f KB over %d steps %f %f \n", (t_accel+t_update)/num_steps, n, nkbytes, num_steps, t_accel/num_steps, t_update/num_steps);
+
+  printf("Average time = %f (ms) per step with %d elements %.2f KB over %d steps %f %f \n",
+    (t_accel+t_update)/num_steps, n, nkbytes, num_steps, t_accel/num_steps, t_update/num_steps);
 
   free(pos);
   pos = NULL;
@@ -166,5 +164,6 @@ int main (int argc, char* argv[]) {
   free_device_memory(&d_mass);
 
   MPI_Finalize();
+
   return 0;
 }

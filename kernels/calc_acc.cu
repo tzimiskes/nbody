@@ -3,14 +3,14 @@
 __global__
 void calc_acc(double * pos , double * acc, double * mass,  int n) {
   // get index of particles
-  int i = threadIdx.x + blockDim.x * blockIdx.x;
+  size_t i = threadIdx.x + blockDim.x * blockIdx.x;
   double ax = 0, ay = 0, az = 0;
   const double xi = pos[0 + i*NDIM];
   const double yi = pos[1 + i*NDIM];
   const double zi = pos[2 + i*NDIM];
   // make sure we are not acccessing memory that is OOB
   if (i < n) {
-    for (int j = 0 ; j < n; ++j) {
+    for (size_t j = 0 ; j < n; ++j) {
 
 
       double rx = pos[0 + j*NDIM] - xi;
