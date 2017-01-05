@@ -1,5 +1,4 @@
 #include <kernels.cuh>
-
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -11,7 +10,7 @@
    /* Check the error flag. Print if something went wrong and then abort. */ \
    if (cuda_error != cudaSuccess) \
    { \
-     fprintf(stderr, "Cuda runtime error! %s\nError code: %i -- %s!\n",#_cmd_, cuda_error, cudaGetErrorString(cuda_error)); \
+     fprintf(stderr, "Cuda runtime error! %s\nError code: %i -- %s!\n", #_cmd_, cuda_error, cudaGetErrorString(cuda_error)); \
      exit(EXIT_FAILURE); \
    } \
 }
@@ -37,17 +36,17 @@ extern "C" {
     cuda_error_check( cudaMemcpy(dst, d_src, n_elements*sizeof(double), cudaMemcpyDeviceToHost) );
   }
 
-
-  float call_calc_acc(double* d_pos, double* d_acc, double* d_mass, int n) {
+  // returns execution time of function
+  float call_calc_acc(double* d_pos, double* d_acc, double* d_mass, const int n, const int start, const int end) {
     cudaEvent_t t0, t1;
-    cuda_error_check( cudaEventCreate(&t0) );
-    cuda_error_check( cudaEventCreate(&t1) );
+    cuda_error_check( cudaEventCreate(&t0));
+    cuda_error_check( cudaEventCreate(&t1));
 
-    dim3 block_size = dim3(256, 1, 1);
-    dim3 grid_size = dim3( n/block_size.x + 1, 1, 1);
+    dim3 block_size = dim3(512, 1 , 1);
+    dim3 grid_size = dim3( (end-start)/block_size.x + 1, 1, 1);
 
-    cuda_error_check( cudaEventRecord(t0) );
-    calc_acc<<<grid_size, block_size>>>(d_pos, d_acc, d_mass, n);
+    cuda_error_check( cudaEventRecord(t0));
+    calc_acc<<<grid_size, block_size>>>(d_pos, d_acc, d_mass, n , start, end);
     cuda_error_check( cudaEventRecord(t1));
 
     cudaDeviceSynchronize();
@@ -57,13 +56,13 @@ extern "C" {
 
     return t_ellapsed;
   }
-
-  float call_update(double* d_pos, double* d_vel,double* d_acc, int n, double dt) {
+  // return execution time of function
+  float call_update(double* d_pos, double* d_vel, double* d_acc, int n, double dt) {
     cudaEvent_t t0, t1;
     cuda_error_check( cudaEventCreate(&t0));
     cuda_error_check( cudaEventCreate(&t1));
 
-    dim3 block_size = dim3(256, 1, 1);
+    dim3 block_size = dim3(512, 1 , 1);
     dim3 grid_size = dim3( n/block_size.x + 1, 1, 1);
 
     cuda_error_check( cudaEventRecord(t0) );

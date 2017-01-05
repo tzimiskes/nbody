@@ -12,7 +12,7 @@ NVCCFLAGS = -ccbin=$(CXX) -Xcompiler
 CXXFLAGS = -O3 -I. -I$(HEADERS) -D_FORCE_INLINES
 LDFLAGS = -lcudart -L/opt/apps/cuda/6.5/lib64/lcudart -L$(CUDA_PATH) -lm
 
-EXEC = nbody-cuda
+EXEC = nbody
 
 all: $(EXEC)
 
