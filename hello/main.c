@@ -2,7 +2,7 @@
 
 extern void get_dev_info();
 
-int int main(int argc, char const *argv[]) {
+int main(int argc, char const *argv[]) {
   MPI_Init(&argc, &argv);
   int rank, n_procs;
 
