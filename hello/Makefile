@@ -18,10 +18,10 @@ hello.o: hello.cu
 	$(NVCC) $(NVCCFLAGS) $(CXXFLAGS) -c $<
 
 main.o :main.c
-	$(MPICXX) $(CXXFLAGS) $(CFLAGS) -c $<
+	$(MPICC) $(CXXFLAGS) $(CFLAGS) -c $<
 
 $(EXEC): $(OBJS)
-	$(MPICXX) $(CXXFLAGS)  $^  -o $@ $(LDFLAGS)
+	$(MPICC) $(CXXFLAGS)  $^  -o $@ $(LDFLAGS)
 
 clean:
 	/bin/rm -fv $(EXEC) *.d *.o *.optrpt
