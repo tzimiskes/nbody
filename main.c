@@ -164,7 +164,7 @@ int main (int argc, char* argv[]) {
   int local_start, local_end;
   partition_range(0, n, n_procs, rank, &local_start, &local_end);
 //  int n_particles = local_end - local_start;
-
+  printf("%i %i\n",local_start, local_end );
   /////////////// Copied from stack overflow.
   int counts [n_procs];
   int disps  [n_procs];
@@ -208,7 +208,7 @@ int main (int argc, char* argv[]) {
 
 
   float nkbytes = (float)((size_t)7 * sizeof(double) * (size_t)n) / 1024.0f;
-
+  if (rank == 0)
   printf("Average time = %f (ms) per step with %d elements %.2f KB over %d steps %f %f \n",
     (t_accel+t_update)/num_steps, n, nkbytes, num_steps, t_accel/num_steps, t_update/num_steps);
 
