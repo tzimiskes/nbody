@@ -37,12 +37,15 @@ extern "C" {
   }
 
   // returns execution time of function
-  float call_calc_acc(double* d_pos, double* d_acc, double* d_mass, const int n, const unsigned int start, const unsigned int end, const unsigned int rank) {
+  float call_calc_acc(double* d_pos, double* d_acc, double* d_mass, const int n,
+  const unsigned int start, const unsigned int end, const unsigned int rank) {
+
     cudaEvent_t t0, t1;
     cuda_error_check( cudaEventCreate(&t0));
     cuda_error_check( cudaEventCreate(&t1));
 
     dim3 block_size = dim3(512, 1 , 1);
+    // launch number of blocks to cover end-start number of particles
     dim3 grid_size = dim3( (end-start)/block_size.x + 1, 1, 1);
 
     cuda_error_check( cudaEventRecord(t0));
@@ -57,16 +60,18 @@ extern "C" {
     return t_ellapsed;
   }
   // return execution time of function
-  float call_update(double* d_pos, double* d_vel, double* d_acc, int n, double dt) {
+  float call_update(double* d_pos, double* d_vel, double* d_acc, int n, double h,
+  const unsigned int start, const unsigned int end) {
+
     cudaEvent_t t0, t1;
     cuda_error_check( cudaEventCreate(&t0));
     cuda_error_check( cudaEventCreate(&t1));
 
     dim3 block_size = dim3(512, 1 , 1);
-    dim3 grid_size = dim3( n/block_size.x + 1, 1, 1);
+    dim3 grid_size = dim3( (end-start)/block_size.x + 1, 1, 1);
 
     cuda_error_check( cudaEventRecord(t0) );
-    update<<<grid_size,block_size>>>( d_pos, d_vel, d_acc , n, dt);
+    update<<<grid_size,block_size>>>(d_pos, d_vel, d_acc , n, h, start, end);
     cuda_error_check( cudaEventRecord(t1) );
 
     cudaDeviceSynchronize();

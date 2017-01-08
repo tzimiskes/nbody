@@ -163,7 +163,7 @@ int main (int argc, char* argv[]) {
 
   int local_start, local_end;
   partition_range(0, n, n_procs, rank, &local_start, &local_end);
-  
+
   /////////////// Copied from stack overflow.
   int counts [n_procs];
   int disps  [n_procs];
@@ -187,7 +187,7 @@ int main (int argc, char* argv[]) {
     t_accel += call_calc_acc(d_pos, d_acc, d_mass, n, local_start, local_end, rank);
 
     // launch kernel to update pos and vel
-    t_update += call_update(d_pos, d_vel, d_acc, n, h);
+    t_update += call_update(d_pos, d_vel, d_acc, n, h, local_start, local_end);
 
     transfer_from_device(pos, d_pos, 3*n);
     transfer_from_device(vel, d_vel, 3*n);
