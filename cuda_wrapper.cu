@@ -37,7 +37,7 @@ extern "C" {
   }
 
   // returns execution time of function
-  float call_calc_acc(double* d_pos, double* d_acc, double* d_mass, const int n, const int start, const int end) {
+  float call_calc_acc(double* d_pos, double* d_acc, double* d_mass, const int n, const int start, const int end, const int rank) {
     cudaEvent_t t0, t1;
     cuda_error_check( cudaEventCreate(&t0));
     cuda_error_check( cudaEventCreate(&t1));
@@ -46,7 +46,7 @@ extern "C" {
     dim3 grid_size = dim3( (end-start)/block_size.x + 1, 1, 1);
 
     cuda_error_check( cudaEventRecord(t0));
-    calc_acc<<<grid_size, block_size>>>(d_pos, d_acc, d_mass, n , start, end);
+    calc_acc<<<grid_size, block_size>>>(d_pos, d_acc, d_mass, n , start, end, rank);
     cuda_error_check( cudaEventRecord(t1));
 
     cudaDeviceSynchronize();

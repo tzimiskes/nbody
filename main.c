@@ -66,7 +66,7 @@ int main (int argc, char* argv[]) {
   // Define the number of particles. The default is 100..
   int n = 100;
   // Initialize MPI
-  MPI_Init(&argc,&argv);
+  MPI_Init(&argc, &argv);
   // get processor rank and number of processors
   int rank, n_procs;
   MPI_Comm_size(MPI_COMM_WORLD, &n_procs);
@@ -185,7 +185,7 @@ int main (int argc, char* argv[]) {
 
     // launch kernel on gpu to calculate acceleration
     // retuns time it takes to complete function
-    t_accel += call_calc_acc(d_pos, d_acc, d_mass, n, local_start, local_end);
+    t_accel += call_calc_acc(d_pos, d_acc, d_mass, n, local_start, local_end, rank);
 
     // launch kernel to update pos and vel
     t_update += call_update(d_pos, d_vel, d_acc, n, h);
