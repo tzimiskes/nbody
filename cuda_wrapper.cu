@@ -37,7 +37,7 @@ extern "C" {
   }
 
   // returns execution time of function
-  float call_calc_acc(double* d_pos, double* d_acc, double* d_mass, const int n, const int start, const int end, const int rank) {
+  float call_calc_acc(double* d_pos, double* d_acc, double* d_mass, const int n, const unsigned int start, const unsigned int end, const unsigned int rank) {
     cudaEvent_t t0, t1;
     cuda_error_check( cudaEventCreate(&t0));
     cuda_error_check( cudaEventCreate(&t1));
