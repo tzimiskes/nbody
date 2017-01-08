@@ -7,7 +7,7 @@ void calc_acc(double * pos , double * acc, double * mass,  const int n , const u
   double ax = 0, ay = 0, az = 0;
   // make sure we are not acccessing memory that is OOB
   if (i < end) {
-    printf("Rank: %d Thread: %d, local start: %d, local end: %d\n", rank, i, start, end);
+  //  printf("Rank: %d Thread: %d, local start: %d, local end: %d\n", rank, i, start, end);
 
     const double xi = pos[0 + 3*i];
     const double yi = pos[1 + 3*i];

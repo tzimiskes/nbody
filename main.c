@@ -163,8 +163,7 @@ int main (int argc, char* argv[]) {
 
   int local_start, local_end;
   partition_range(0, n, n_procs, rank, &local_start, &local_end);
-//  int n_particles = local_end - local_start;
-  printf("%i %i\n",local_start, local_end );
+  
   /////////////// Copied from stack overflow.
   int counts [n_procs];
   int disps  [n_procs];
